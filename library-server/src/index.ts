@@ -1,41 +1,40 @@
 import 'reflect-metadata';
 import express from 'express';
-import expressJwt from 'express-jwt';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { createConnection } from 'typeorm';
+import { Book } from './entity/Book';
 
 import './env';
-import oauthRouter from './routes/oauth';
-import authRouter from './routes/auth';
+import apiRouter from './routes';
 
 const app = express();
 app.use(morgan('dev'));
-app.use(cors({
-  credentials: true,
-  origin: [process.env.CLIENT_APP_ORIGIN]
-}));
+app.use(
+  cors({
+    credentials: true,
+    origin: [process.env.CLIENT_APP_ORIGIN],
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
-const jwtMiddleware = expressJwt({
-  secret: process.env.JWT_SECRET,
-  algorithms: ['HS256'],
-  getToken: function fromHeaderOrQuerystring (req) {
-    const { jwt } = req.cookies;
-    return jwt || null;
-  },
-});
 
-app.use('/api/oauth', oauthRouter);
-app.use('/api/auth', jwtMiddleware, authRouter);
+app.use('/api', apiRouter);
 
 async function bootstrap() {
-  await createConnection();
+  const connection = await createConnection();
+
+  const repository = connection.getRepository(Book);
+
+  // const book = new Book();
+  // book.title = 'The Kubernetes Workshop';
+  // book.slug = 'the-kubernetes-workshop';
+  // book.coverPicture = 'https://static.packt-cdn.com/products/9781838820756/cover/9781838820756-original.png';
+  // await repository.save(book);
 
   const port = process.env.PORT;
   app.listen(port, () => console.log(`Listening on ${port}`));
 }
 
-bootstrap()
-  .catch((error) => console.log(error));
+bootstrap().catch((error) => console.log(error));
