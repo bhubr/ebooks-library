@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import OAuth2Login from 'react-simple-oauth2-login';
+import { Link } from 'react-router-dom';
 import { postCode, getConnectedUser, getBooks } from './helpers/api';
 import { User, Book } from './types';
 
@@ -65,10 +66,10 @@ function Home() {
       {
         books && books.map(
           book => (
-            <div key={book.id}>
+            <Link to={`/books/${book.slug}`} key={book.id}>
               <h3>{book.title}</h3>
               <img style={{ maxWidth: 300 }} alt={book.title} src={book.coverPicture} />
-            </div>
+            </Link>
           )
         )
       }
