@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import OAuth2Login from 'react-simple-oauth2-login';
-import { postCode, getConnectedUser } from './helpers/api';
-import { User } from './types';
+import { postCode, getConnectedUser, getBooks } from './helpers/api';
+import { User, Book } from './types';
 
 const authUrl = 'https://github.com/login/oauth/authorize';
 const redirectUri = process.env.REACT_APP_REDIRECT_URI;
 const clientId = process.env.REACT_APP_CLIENT_ID;
 
-function App() {
+function Home() {
   const [error, setError] = useState<Error|null>(null);
   const [user, setUser] = useState<User|null>(null);
+  const [books, setBooks] = useState<Book[]|null>(null);
 
   useEffect(() => {
     getConnectedUser()
       .then(setUser)
       .catch(setError);
   }, []);
+
+  useEffect(() => {
+    getBooks()
+      .then(setBooks)
+      .catch(setError);
+  }, [user]);
   
   const onSuccess = ({ code }: { code: string }) => postCode(code)
     .then(user => setUser(user))
@@ -55,8 +62,18 @@ function App() {
           </div>
         )
       }
+      {
+        books && books.map(
+          book => (
+            <div key={book.id}>
+              <h3>{book.title}</h3>
+              <img style={{ maxWidth: 300 }} alt={book.title} src={book.coverPicture} />
+            </div>
+          )
+        )
+      }
     </div>
   );
 }
 
-export default App;
+export default Home;
