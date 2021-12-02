@@ -16,7 +16,6 @@ async function getAccessToken(code: string): Promise<URLSearchParams> {
     grant_type: 'authorization_code',
   });
   const payload = searchParams.toString();
-  console.log('sending payload', payload);
   const { data } = await axios.post(tokenUrl, payload, {
     headers: {
       'content-type': 'application/x-www-form-urlencoded;charset=utf-8',

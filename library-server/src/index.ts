@@ -1,17 +1,34 @@
 import 'reflect-metadata';
 import express from 'express';
+import expressJwt from 'express-jwt';
 import cors from 'cors';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import { createConnection } from 'typeorm';
 
+import './env';
 import oauthRouter from './routes/oauth';
-// import { User } from './entity/User';
+import authRouter from './routes/auth';
 
 const app = express();
-app.use(cors());
+app.use(morgan('dev'));
+app.use(cors({
+  credentials: true,
+  origin: [process.env.CLIENT_APP_ORIGIN]
+}));
 app.use(express.json());
+app.use(cookieParser());
+const jwtMiddleware = expressJwt({
+  secret: process.env.JWT_SECRET,
+  algorithms: ['HS256'],
+  getToken: function fromHeaderOrQuerystring (req) {
+    const { jwt } = req.cookies;
+    return jwt || null;
+  },
+});
 
 app.use('/api/oauth', oauthRouter);
-
+app.use('/api/auth', jwtMiddleware, authRouter);
 
 async function bootstrap() {
   await createConnection();
@@ -22,21 +39,3 @@ async function bootstrap() {
 
 bootstrap()
   .catch((error) => console.log(error));
-
-// 
-//   .then(async (connection) => {
-//     console.log('Inserting a new user into the database...');
-//     const user = new User();
-//     user.firstName = 'Timber';
-//     user.lastName = 'Saw';
-//     user.age = 25;
-//     await connection.manager.save(user);
-//     console.log('Saved a new user with id: ' + user.id);
-
-//     console.log('Loading users from the database...');
-//     const users = await connection.manager.find(User);
-//     console.log('Loaded users: ', users);
-
-//     console.log('Here you can setup and run express/koa/any other framework.');
-//   })
-//   .catch((error) => console.log(error));
