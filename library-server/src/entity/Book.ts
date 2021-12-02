@@ -12,5 +12,8 @@ export class Book {
   slug: string;
 
   @Column()
+  filename: string;
+
+  @Column()
   coverPicture: string;
 }
